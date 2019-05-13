@@ -1,0 +1,2 @@
+Project: House Proce predicting model
+Description: Simple prediction model of house prices based on house size implemented in Tensorflow. 
