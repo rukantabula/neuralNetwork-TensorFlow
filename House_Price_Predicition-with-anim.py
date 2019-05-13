@@ -15,12 +15,6 @@ house_size = np.random.randint(low=100, high=3500, size=num_house)
 np.random.seed(42)
 house_price = house_size * np.random.randint(low=20000, high=70000, size=num_house)
 
-# plot generates house and size
-
-plt.plot(house_size, house_price, "bx") # bx = blue x
-plt.ylabel("Price")
-plt.xlabel("Size")
-plt.show()
 
 # normalize values to prevent under/overflows
 
@@ -110,6 +104,7 @@ with tf.Session() as sess:
     print("Opimization Finished!")
     training_cost = sess.run(tf_cost, feed_dict={tf_house_size: train_house_size_norm, tf_price: train_price_norm})
     print("Trained cost=", training_cost, "Size_factor=", sess.run(tf_size_factor), "price_offset", sess.run(tf_price_offset))
+    
 
     train_house_size_std = train_house_size.std()
     train_house_size_mean = train_house_size.mean()
@@ -130,3 +125,35 @@ with tf.Session() as sess:
     plt.legend(loc='upper left')
     plt.show()        
        
+    #plot of trainig and test data
+    train_house_size_std = train_house_size.std()
+    train_house_size_mean = train_house_size.mean()
+    train_price_std = train_price.std()
+    train_price_mean = train_price.mean() 
+
+    fig, ax = plt.subplots()
+    line, = ax.plot(house_size, house_price)
+
+    plt.rcParams["figure.figsize"] = (10,8)
+    plt.title("Gradient Descent Fitting Regression Line")
+    plt.ylabel("Price")
+    plt.xlabel("Size (sq.ft")
+    plt.plot(train_house_size, train_price, 'go', label='Training data')
+    plt.plot(test_house_size, test_house_price, 'mo', label='Testing data')
+
+    def animate(i):
+        line.set_xdata(train_house_size_norm * train_house_size_std + train_house_size_mean) # update data
+        line.set_ydata((fit_size_factor[i] * train_house_size_norm + fit_price_offsets[i]) * train_house_size_std + train_house_size_mean)
+        return line,
+
+        #Init only requires for blitting to give a clean slate
+
+    def initAnim():
+        line.set_ydata(np.zeros(shape=house_price.shape[0]))
+        return line,
+
+    
+    ani = animation.FuncAnimation(fig, animate, frames=np.arange(0, fit_plot_idx), init_func=initAnim, interval=1000, blit=True)
+
+    plt.show()
+     
